@@ -57,3 +57,7 @@ moodle-plugin-ci.phar
 phpcs.xml
 jsconfig.json
 UPGRADING-CURRENT.md
+
+/admin/tool/pluginskel
+/local/codechecker
+/local/moodlecheck
