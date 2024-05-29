@@ -21,19 +21,30 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once('../../config.php');
-require_once($CFG->dirroot . '/local/greetings/lib.php');
+use core\context\user;
 
-$context = context_system::instance();
-$PAGE->set_context($context);
+/**
+ * helper function to adapt greetings message according to localisation
+ * @param /stdClass $user  the current user.
+ * @return lang_string|string
+ */
+function local_greetings_get_greeting($user): lang_string|string {
+    if ($user == null) {
+        return get_string('greetinguser', 'local_greetings');
+    }
 
-$PAGE->set_url(new moodle_url("/local/greetings/index.php"));
-$PAGE->set_pagelayout('standard');
-$PAGE->set_title(get_string("pluginname", "local_greetings"));
-$PAGE->set_heading(get_string("pluginname", "local_greetings"));
+    $country = $user->country;
+    switch ($country) {
+        case 'FR':
+            $langstr = 'greetinguserfr';
+            break;
+        case 'TN':
+            $langstr = 'greetinguserar';
+            break;
+        default:
+            $langstr = 'greetingloggedinuser';
+            break;
+    }
 
-echo $OUTPUT->header();
-
-echo '<h3>' . local_greetings_get_greeting($USER) . '</h3>';
-
-echo $OUTPUT->footer();
+    return get_string($langstr, 'local_greetings', fullname($user));
+}
