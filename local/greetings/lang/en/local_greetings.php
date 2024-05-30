@@ -33,5 +33,5 @@ $string['greetinguserar'] = 'تحيات, {$a}.';
 $string['greetinguserfr'] = 'Salutations, {$a}.';
 
 $string['pluginname'] = 'Greetings';
-
+$string['postedby'] = 'Posted by {$a}.';
 $string['yourmessage'] = 'Your message';
