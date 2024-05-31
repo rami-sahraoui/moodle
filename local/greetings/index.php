@@ -41,14 +41,22 @@ if (isguestuser()) {
 $allowpost = has_capability('local/greetings:postmessages', $context);
 $allowpostview = has_capability('local/greetings:viewmessages', $context);
 $deleteanypost = has_capability('local/greetings:deleteanymessages', $context);
+$deleteownpost = has_capability('local/greetings:deleteownmessages', $context);
 
 $action = optional_param('action', '', PARAM_TEXT);
 
 if ($action == 'del') {
+
+    require_sesskey();
+
     $id = required_param('id', PARAM_TEXT);
 
-    if ($deleteanypost) {
+    $m = $DB->get_record('local_greetings_messages', ['id' => $id]);
+
+    if ($deleteanypost || ($deleteownpost && ($m->userid === $USER->id))) {
         $DB->delete_records('local_greetings_messages', ['id' => $id]);
+
+        redirect($PAGE->url);
     }
 }
 
@@ -89,12 +97,16 @@ if ($allowpostview) {
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('div');
 
-        if ($deleteanypost) {
+        if ($deleteanypost || ($deleteownpost && ($m->userid === $USER->id))) {
             echo html_writer::start_tag('p', ['class' => 'card-footer text-center']);
             echo html_writer::link(
                     new moodle_url(
                             '/local/greetings/index.php',
-                            ['action' => 'del', 'id' => $m->id]
+                            [
+                                    'action' => 'del',
+                                    'id' => $m->id,
+                                    'sesskey' => sesskey(),
+                            ]
                     ),
                     $OUTPUT->pix_icon('t/delete', '') . get_string('delete')
             );
@@ -106,7 +118,7 @@ if ($allowpostview) {
 echo $OUTPUT->box_end();
 
 if ($data = $messageform->get_data()) {
-    $message = required_param('message', PARAM_RAW);
+    $message = required_param('message', PARAM_TEXT);
 
     if (!empty($message)) {
         $record = new stdClass;
@@ -115,6 +127,8 @@ if ($data = $messageform->get_data()) {
         $record->userid = $USER->id;
 
         $DB->insert_record('local_greetings_messages', $record);
+
+        redirect($PAGE->url);
     }
 }
 
