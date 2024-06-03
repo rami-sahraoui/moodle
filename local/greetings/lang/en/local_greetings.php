@@ -30,6 +30,8 @@ $string['greetingloggedinuser'] = 'Greetings, {$a}.';
 
 $string['greetings:deleteanymessages'] = 'Delete any message on the Greetings wall';
 $string['greetings:deleteownmessages'] = 'Delete own message on the Greetings wall';
+$string['greetings:editanymessages'] = 'Edit any message on the Greetings wall';
+$string['greetings:editownmessages'] = 'Edit own message on the Greetings wall';
 $string['greetings:postmessages'] = 'Post a new message on the Greetings wall';
 $string['greetings:viewmessages'] = 'View messages on the Greetings wall';
 

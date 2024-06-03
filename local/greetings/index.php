@@ -42,6 +42,8 @@ $allowpost = has_capability('local/greetings:postmessages', $context);
 $allowpostview = has_capability('local/greetings:viewmessages', $context);
 $deleteanypost = has_capability('local/greetings:deleteanymessages', $context);
 $deleteownpost = has_capability('local/greetings:deleteownmessages', $context);
+$editanypost = has_capability('local/greetings:editanymessages', $context);
+$editownpost = has_capability('local/greetings:editownmessages', $context);
 
 $action = optional_param('action', '', PARAM_TEXT);
 
@@ -57,6 +59,30 @@ if ($action == 'del') {
         $DB->delete_records('local_greetings_messages', ['id' => $id]);
 
         redirect($PAGE->url);
+    }
+}
+
+if ($action == 'edit') {
+
+    require_sesskey();
+
+    $id = required_param('id', PARAM_TEXT);
+
+    $m = $DB->get_record('local_greetings_messages', ['id' => $id]);
+
+    $message = required_param('message', PARAM_TEXT);
+
+    if ($m && !empty($message) &&
+            ($editanypost || ($editownpost && ($m->userid === $USER->id)))
+    ) {
+        $newrecord = new stdClass;
+        $newrecord->id = $id;
+        $newrecord->message = $message;
+
+        $DB->update_record('local_greetings_messages', $newrecord);
+
+        redirect($PAGE->url);
+
     }
 }
 
@@ -97,19 +123,40 @@ if ($allowpostview) {
         echo html_writer::end_tag('div');
         echo html_writer::end_tag('div');
 
-        if ($deleteanypost || ($deleteownpost && ($m->userid === $USER->id))) {
+        $candelete = $deleteanypost || ($deleteownpost && ($m->userid === $USER->id));
+        $canedit = $editanypost || ($editownpost && ($m->userid === $USER->id));
+
+        if ($candelete || $canedit) {
             echo html_writer::start_tag('p', ['class' => 'card-footer text-center']);
-            echo html_writer::link(
-                    new moodle_url(
-                            '/local/greetings/index.php',
-                            [
-                                    'action' => 'del',
-                                    'id' => $m->id,
-                                    'sesskey' => sesskey(),
-                            ]
-                    ),
-                    $OUTPUT->pix_icon('t/delete', '') . get_string('delete')
-            );
+            if ($canedit) {
+                echo html_writer::link(
+                        new moodle_url(
+                                '/local/greetings/index.php',
+                                [
+                                        'action' => 'edit',
+                                        'id' => $m->id,
+                                        'message' => "Edited message !!",
+                                        'sesskey' => sesskey(),
+                                ]
+                        ),
+                        $OUTPUT->pix_icon('i/edit', get_string('edit')),
+                        ['role' => 'button'],
+                );
+            }
+            if ($candelete) {
+                echo html_writer::link(
+                        new moodle_url(
+                                '/local/greetings/index.php',
+                                [
+                                        'action' => 'del',
+                                        'id' => $m->id,
+                                        'sesskey' => sesskey(),
+                                ]
+                        ),
+                        $OUTPUT->pix_icon('t/delete', get_string('delete')),
+                        ['role' => 'button'],
+                );
+            }
             echo html_writer::end_tag('p');
         }
     }
